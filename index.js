@@ -29,6 +29,7 @@ async function run() {
 
     const foodsCollection = client.db('foodshop').collection('foods')
     const cartsCollection = client.db('foodshop').collection('cart')
+    const reviewsCollection = client.db('foodshop').collection('reviews')
  
 
 app.get("/foods", async (req,res)=>{
@@ -81,6 +82,22 @@ app.put("/updateCartItem/:id", async(req,res)=>{
   res.send(cartItem)
 
 })
+
+
+app.get('/reviews',async(req,res)=>{
+  const reviews = await reviewsCollection.find().toArray()
+  res.send(reviews)
+})
+
+app.post('/addreview',async(req,res)=>{
+  const review = req.body
+    const result = await reviewsCollection.insertOne(review)
+    res.send(result)
+   
+})
+
+
+
 
   
 }
