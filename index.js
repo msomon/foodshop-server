@@ -2,6 +2,7 @@ const express = require("express")
 const app = express()
 require("dotenv").config()
 const cors = require("cors")
+
 const stripe = require('stripe')("sk_test_51L44ajDHVcHNosnNJzXNsdXKc5d24I44V2veu4C6FvZ7UVWM3gX5m0nRPLhziOgzdQvCFS2j2SNRivw8bRP2cAIk005GmZdbUb");
 const port = process.env.PORT || 5000 ;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -9,10 +10,6 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 app.use(cors())
 app.use(express.json())
 var jwt = require('jsonwebtoken');
-
-
-
-console.log(stripe);
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ee1wrfu.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -118,6 +115,7 @@ app.delete("/deleteCartItem/:id", async(req,res)=>{
 
 
 
+
 app.put("/updateCartItem/:id", async(req,res)=>{
 
   const id = req.params.id
@@ -193,13 +191,15 @@ app.put("/user/myprofile/:email",async (req,res)=>{
 app.post('/create-payment-intent', async(req,res)=>{
 
   const {totalSum} = req.body 
-  const totalAmount = parseFloat(totalSum) * 100 ;
+  const totalAmount = parseInt(totalSum * 100 );
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: totalAmount,
+    amount:totalAmount >=1 && totalAmount  ,
     currency: "usd",
     payment_method_types:['card'],
     
   })
+
+
   res.send({clientSecret:paymentIntent.client_secret})
   
    })
@@ -253,10 +253,18 @@ app.get("/allorders" ,async(req,res)=>{
 
 } )
 
+app.get("/myorders/:email",async(req,res)=>{
+  const email= req.params.email 
+  filter={email:email}
+  const myorders = await paymentCollection.find({}).toArray()
+  res.send(myorders)
+
+})
+
 
 app.delete("/admincancelorder/:id",async(req,res)=>{
   const id = req.params.id
-  console.log();
+ 
   const filter={_id:new ObjectId(id)}
 
 cancelorder = await paymentCollection.deleteOne(filter) 
