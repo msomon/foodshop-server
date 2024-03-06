@@ -28,18 +28,20 @@ const client = new MongoClient(uri, {
 
 
 function verifyJWT(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).send({ message: 'UnAuthorized access' });
-  }
-  const token = authHeader.split(' ')[1];
-  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
-    if (err) {
-      return res.status(403).send({ message: 'Forbidden access' })
-    }
-    req.decoded = decoded;
-    next();
-  });
+  // const authHeader = req.headers.authorization;
+  // console.log("res from jwt" , authHeader);
+  // console.log(req.headers.Authorization);
+  // if (!authHeader) {
+  //   return res.status(401).send({ message: 'UnAuthorized access' });
+  // }
+  // const token = authHeader.split(' ')[1];
+  // jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+  //   if (err) {
+  //     return res.status(403).send({ message: 'Forbidden access' })
+  //   }
+  //   req.decoded = decoded;
+  //   next();
+  // });
 }
 
 
@@ -191,15 +193,14 @@ app.put("/user/myprofile/:email",async (req,res)=>{
 app.post('/create-payment-intent', async(req,res)=>{
 
   const {totalSum} = req.body 
-  const totalAmount = parseInt(totalSum * 100 );
+  const totalAmount = (totalSum * 100) ;
   const paymentIntent = await stripe.paymentIntents.create({
-    amount:totalAmount >=1 && totalAmount  ,
+    amount:totalAmount ,
     currency: "usd",
     payment_method_types:['card'],
     
   })
-
-
+  
   res.send({clientSecret:paymentIntent.client_secret})
   
    })
@@ -209,9 +210,8 @@ app.post('/create-payment-intent', async(req,res)=>{
      const email = req.params.email
      const payment = req.body 
      const filter ={email:email}
-      const deleteResult = await cartsCollection.deleteMany(filter)
-
-  const result = await paymentCollection.insertOne(payment)
+     const deleteResult = await cartsCollection.deleteMany(filter)
+     const result = await paymentCollection.insertOne(payment)
   res.send({deleteResult, result})
    })
 
@@ -219,7 +219,7 @@ app.post('/create-payment-intent', async(req,res)=>{
   //  payment mathood close //
 
 
-  app.get('/users',async(req,res)=>{
+  app.get('/users' ,async(req,res)=>{
     users = await usersCollection.find().toArray()
     res.send(users)
   })
@@ -254,9 +254,9 @@ app.get("/allorders" ,async(req,res)=>{
 } )
 
 app.get("/myorders/:email",async(req,res)=>{
-  const email= req.params.email 
-  filter={email:email}
-  const myorders = await paymentCollection.find({}).toArray()
+  const email= req.params.email
+  const filter = {email:email}
+  const myorders = await paymentCollection.find(filter).toArray()
   res.send(myorders)
 
 })
